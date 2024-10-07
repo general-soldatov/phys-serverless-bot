@@ -1,0 +1,7 @@
+# This is a TOML document.
+
+title = "TOML Configure"
+
+[study]
+weekday = ['', "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА", "ВОСКРЕСЕНЬЕ"]
+select_day = ['today', 'tomorrow', 'after_tom', 'to_2_day']

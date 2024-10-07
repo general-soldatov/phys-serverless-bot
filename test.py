@@ -1,5 +1,8 @@
 from dynamodb_fsm import FSMDynamodb
 import asyncio
+# from handlers.question import Shedule
+from app.api.user_api import Shedule
+from datetime import datetime
 
 async def all():
     result = FSMDynamodb().all_value()
@@ -11,4 +14,6 @@ def delete():
         FSMDynamodb().delete_note(key=i)
 
 # asyncio.run(all())
-delete()
+# delete()
+exp = datetime.now().strftime("%d.%m.%Y")
+print(exp)
