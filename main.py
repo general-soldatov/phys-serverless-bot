@@ -3,10 +3,10 @@ import json
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import update
-from load import dp, bot, register_handler
+from load import dp, bot
 
 async def main():
-    await register_handler(dp)
+    # await register_handler(dp)
     await dp.start_polling(bot)
 
 async def process_event(event, dp: Dispatcher, bot: Bot):
@@ -23,7 +23,7 @@ async def handler(event, context):
 
     if event['httpMethod'] == 'POST':
         # Bot and dispatcher initialization
-        await register_handler(dp)
+        # await register_handler(dp)
         await process_event(event, dp, bot)
         return {'statusCode': 200, 'body': 'ok'}
     return {'statusCode': 405}

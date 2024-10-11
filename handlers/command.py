@@ -8,6 +8,8 @@ from aiogram_dialog import Dialog, DialogManager, StartMode, Window
 from aiogram_dialog.widgets.kbd import Button, Row, Select, Group, Checkbox, ManagedCheckbox, Column, Multiselect, Radio
 from aiogram_dialog.widgets.text import Const, Format
 
+from app.router import SLRouter
+
 class StartStorage(StatesGroup):
     start = State()
 
@@ -150,20 +152,21 @@ lang_dialog = Dialog(
     ),
 )
 
-async def router(dp: Dispatcher):
+router = SLRouter()
+# async def router(dp: Dispatcher):
 
-    @dp.message(CommandStart())
-    async def start(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(state=StartStorage.start, mode=StartMode.RESET_STACK)
+@router.message(CommandStart())
+async def start(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(state=StartStorage.start, mode=StartMode.RESET_STACK)
 
-    @dp.message(Command(commands=['tech']))
-    async def tech(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(Tech.tech)
+@router.message(Command(commands=['tech']))
+async def tech(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(Tech.tech)
 
-    @dp.message(Command('news'))
-    async def news(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(News.start)
+@router.message(Command('news'))
+async def news(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(News.start)
 
-    @dp.message(Command('lang'))
-    async def lang(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(Language.start)
+@router.message(Command('lang'))
+async def lang(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(Language.start)

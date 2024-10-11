@@ -1,16 +1,18 @@
+import operator
 from aiogram import Dispatcher
 from aiogram.filters import Command
 from aiogram.enums import ContentType, ParseMode
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery, User
 from aiogram.fsm.state import State, StatesGroup
 
-from aiogram_dialog import Dialog, DialogManager, Window
+from aiogram_dialog import Dialog, DialogManager, Window, StartMode
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Cancel, Next, Row, SwitchTo
-from aiogram_dialog.widgets.text import Const
+from aiogram_dialog.widgets.kbd import Cancel, Next, Row, SwitchTo, Select
+from aiogram_dialog.widgets.text import Const, Format
 
 from app.config.config import TGbot
 from app.api.user_api import Shedule
+from app.router import SLRouter
 
 class Question(StatesGroup):
     start = State()
@@ -22,8 +24,9 @@ class SheduleState(StatesGroup):
     window_after_tom = State()
     window_to_2_day = State()
 
+
 async def message_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
-    await message.bot.copy_message(chat_id=TGbot().admin, from_chat_id=message.from_user.id,
+    await message.bot.copy_message(chat_id=TGbot().admin, from_chat_id=str(message.from_user.id),
                                    message_id=message.message_id)
     await message.answer(text='Question send to lecturer')
     await dialog_manager.reset_stack()
@@ -52,13 +55,13 @@ lst_window = [
 for item in Shedule().data()]
 
 shedule_dialog = Dialog(*lst_window)
+dp = SLRouter()
+# async def router(dp: Dispatcher):
 
-async def router(dp: Dispatcher):
+@dp.message(Command('question'))
+async def question_cmd(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(state=Question.start, mode=StartMode.RESET_STACK)
 
-    @dp.message(Command('question'))
-    async def question(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(state=Question.start)
-
-    @dp.message(Command('shedule'))
-    async def shedule(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(SheduleState.window_today)
+@dp.message(Command('shedule'))
+async def shedule(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(SheduleState.window_today, mode=StartMode.RESET_STACK)

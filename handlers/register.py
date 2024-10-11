@@ -3,9 +3,12 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
 
-from aiogram_dialog import DialogManager, Dialog, Window
+from aiogram_dialog import DialogManager, Dialog, Window, StartMode
 from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
 from aiogram_dialog.widgets.text import Const
+
+from .command import router
+
 
 class Register(StatesGroup):
     start = State()
@@ -36,8 +39,6 @@ register_dialog = Dialog(
     )
 )
 
-async def router(dp: Dispatcher):
-
-    @dp.message(Command('register'))
-    async def start(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(state=Register.start)
+@router.message(Command('register'))
+async def cmd_register(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(state=Register.start, mode=StartMode.RESET_STACK)
