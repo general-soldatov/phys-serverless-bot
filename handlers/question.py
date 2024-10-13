@@ -1,22 +1,21 @@
-import operator
-from aiogram import Dispatcher
 from aiogram.filters import Command
-from aiogram.enums import ContentType, ParseMode
-from aiogram.types import Message, CallbackQuery, User
+from aiogram.enums import ContentType
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 
 from aiogram_dialog import Dialog, DialogManager, Window, StartMode
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Cancel, Next, Row, SwitchTo, Select
-from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.kbd import Row, SwitchTo
+from aiogram_dialog.widgets.text import Const
 
 from app.config.config import TGbot
 from app.api.user_api import Shedule
 from app.router import SLRouter
+from app.config.config import USER
+from app.keyboard.inline import UserInline
 
 class Question(StatesGroup):
     start = State()
-    cancel = State()
 
 class SheduleState(StatesGroup):
     window_today = State()
@@ -24,16 +23,19 @@ class SheduleState(StatesGroup):
     window_after_tom = State()
     window_to_2_day = State()
 
-
 async def message_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
+    buttons = UserInline(width=1).question(message.from_user.id)
+    data_question = dict(user_id=message.from_user.id, name='Yurs', profile='HTTC', group='1-a')
+    await message.bot.send_message(chat_id=TGbot.admin,
+                                   text=USER['send_question'].format(**data_question), reply_markup=buttons)
     await message.bot.copy_message(chat_id=TGbot().admin, from_chat_id=str(message.from_user.id),
                                    message_id=message.message_id)
-    await message.answer(text='Question send to lecturer')
+    await message.answer(text=USER['get_question'])
     await dialog_manager.reset_stack()
 
 question = Dialog(
     Window(
-        Const(text='Insert you question'),
+        Const(text=USER['question']),
         MessageInput(
             func=message_handler,
             content_types=ContentType.ANY
@@ -55,6 +57,7 @@ lst_window = [
 for item in Shedule().data()]
 
 shedule_dialog = Dialog(*lst_window)
+
 router = SLRouter()
 
 @router.message(Command('question'))
