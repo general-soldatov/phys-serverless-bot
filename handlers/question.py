@@ -55,13 +55,12 @@ lst_window = [
 for item in Shedule().data()]
 
 shedule_dialog = Dialog(*lst_window)
-dp = SLRouter()
-# async def router(dp: Dispatcher):
+router = SLRouter()
 
-@dp.message(Command('question'))
+@router.message(Command('question'))
 async def question_cmd(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=Question.start, mode=StartMode.RESET_STACK)
 
-@dp.message(Command('shedule'))
+@router.message(Command('shedule'))
 async def shedule(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(SheduleState.window_today, mode=StartMode.RESET_STACK)

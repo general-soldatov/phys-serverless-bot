@@ -96,12 +96,3 @@ class SLRouter(Router):
     #     def wrapped(*args):
     #         self.funcs.append([func, args])
     #     return wrapped
-
-
-
-
-class SLDispatcher(Dispatcher):
-    def sl_register(self, *routers: SLRouter):
-        for rout in routers:
-            for func, filt in rout.funcs:
-                self.message.register(func, *filt)

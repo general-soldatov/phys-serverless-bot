@@ -63,14 +63,13 @@ task_dialog = Dialog(
     )
 )
 
-dp = SLRouter()
-# async def router(dp: Dispatcher):
+router = SLRouter()
 
-@dp.message(Command('task'))
-async def task(message: Message, dialog_manager: DialogManager):
+@router.message(Command('task'))
+async def cmd_task(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(TaskState.start, mode=StartMode.RESET_STACK)
 
-@dp.callback_query(GraphTaskScoreCall.filter())
+@router.callback_query(GraphTaskScoreCall.filter())
 async def graph_task_score_call(callback: CallbackQuery,
                                 callback_data: GraphTaskScoreCall):
     # UserVar().add_task(user_id=int(callback_data.user_id),

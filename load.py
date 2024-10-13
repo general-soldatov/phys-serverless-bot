@@ -11,7 +11,7 @@ from os import getenv
 
 from app.config.config import TGbot
 from handlers import command, register, question, task
-from app.router import SLDispatcher
+
 
 load_dotenv()
 @dataclass
@@ -30,15 +30,21 @@ bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 # comand`s dialog router
-dp.include_routers(task.dp, question.dp, command.router)
-dp.include_routers(command.start_dialog, command.tech_dialog,
-                   command.news_dialog, command.lang_dialog)
-# user register
-dp.include_routers(register.register_dialog, question.question,
-                   question.shedule_dialog, task.task_dialog)
+command_routers = [
+    task.router,
+    question.router,
+    command.router
+]
+dialog_routers = [
+    command.start_dialog,
+    command.tech_dialog,
+    command.news_dialog,
+    command.lang_dialog,
+    register.register_dialog,
+    question.question,
+    question.shedule_dialog,
+    task.task_dialog
+]
+dp.include_routers(*command_routers)
+dp.include_routers(*dialog_routers)
 setup_dialogs(dp)
-
-# async def register_handler(dp: Dispatcher):
-#     await register.router(dp)
-    # await question.router(dp)
-    # await task.router(dp)
