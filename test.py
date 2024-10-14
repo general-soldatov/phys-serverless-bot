@@ -3,6 +3,8 @@ import asyncio
 # from handlers.question import Shedule
 from app.api.user_api import Shedule
 from datetime import datetime
+import requests
+import json
 
 async def all():
     result = FSMDynamodb().all_value()
@@ -13,7 +15,24 @@ def delete():
     for i in data:
         FSMDynamodb().delete_note(key=i)
 
-# asyncio.run(all())
-# delete()
-exp = datetime.now().strftime("%d.%m.%Y")
-print(exp)
+def books():
+    book_dict = {
+        'metodic' : {
+            'mechanic_mkt': 'https://drive.google.com/file/d/10ToIHwEVfMOCmsB3Rx0MrTMO3HguWWcF/view?usp=sharing',
+            'electrical': 'https://drive.google.com/file/d/10IN4eIFwDeObEX-VOdgGNwriSuC1d9rj/view?usp=sharing',
+            'optics': 'https://drive.google.com/file/d/10PhhtqlFOLd8hOn8vFnjAt5ejQDGqcMG/view?usp=sharing'
+        },
+        'textbook': {
+            'physics': 'https://drive.google.com/file/d/1-vqc9NgTDGwn_ZLUX4hrDg4qnqAtoFsc/view?usp=sharing'
+        }
+    }
+    with open('app/config/books.json', 'w', encoding='utf-8') as file:
+        json.dump(book_dict, file, ensure_ascii=False, indent=4)
+
+from typing import Optional
+
+def req_book(book: Optional[str] = None):
+    url = 'https://storage.yandexcloud.net/phys-bot/json/books.json'
+    response = requests.get(url)
+    data: dict = response.json()
+    return data[book] if book else data

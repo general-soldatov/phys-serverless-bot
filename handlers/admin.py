@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import Row, Button
 
 from app.router import SLRouter
 from app.keyboard.inline import UserQuestion
-from app.config.config import TGbot, ADMIN, BUTTONS_RU
+from app.config.config import TGbot, ADMIN, BUTTON
 
 class Lecturer(StatesGroup):
     start = State()
@@ -26,8 +26,7 @@ async def question_yes(callback: CallbackQuery, widget: Button, dialog_manager: 
     await dialog_manager.done()
 
 async def question_no(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    await callback.message.edit_text(ADMIN['mailer_cancel'])
-    await dialog_manager.done()
+    await dialog_manager.back()
 
 question_dialog = Dialog(
     Window(
@@ -41,8 +40,8 @@ question_dialog = Dialog(
     Window(
         Const(ADMIN['available_reply']),
         Row(
-            Button(text=Const(BUTTONS_RU['yes']), id='yes', on_click=question_yes),
-            Button(text=Const(BUTTONS_RU['no']), id='no', on_click=question_no)
+            Button(text=Const(BUTTON['yes']), id='yes', on_click=question_yes),
+            Button(text=Const(BUTTON['no']), id='no', on_click=question_no)
         ),
         state=Lecturer.available
     )

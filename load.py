@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from os import getenv
 
 from app.config.config import TGbot
-from handlers import command, register, question, task, admin
+from handlers import command, register, question, task, admin, users
 
 
 load_dotenv()
@@ -31,6 +31,7 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 # comand`s dialog router
 command_routers = [
+    users.router,
     task.router,
     question.router,
     command.router,

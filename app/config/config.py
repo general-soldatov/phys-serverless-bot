@@ -11,14 +11,14 @@ lexicon = toml.load('app/config/lexicon.toml')
 class TGbot:
     token: str = getenv('TOKEN')
     admin: str = '980314213'
-    shedule: str = getenv('API_SHEDULE')
+
 
 @dataclass
 class StudyConfig:
     weekday = data['study']['weekday']
     select_day = list(data['study']['select_day'])
 
-BUTTONS_RU = lexicon['buttons_ru']
+BUTTON = lexicon['buttons_ru']
 ADMIN = lexicon['admin']
 USER = lexicon['user']
-# COMMANDS = data['commands']
+COMMANDS = lexicon['commands']

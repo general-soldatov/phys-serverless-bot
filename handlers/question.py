@@ -8,11 +8,10 @@ from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Row, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
-from app.config.config import TGbot
+from app.config.config import TGbot, USER, BUTTON
 from app.api.user_api import Shedule
 from app.router import SLRouter
-from app.config.config import USER
-from app.keyboard.inline import UserInline
+from app.keyboard.inline import AdminInline
 
 class Question(StatesGroup):
     start = State()
@@ -24,14 +23,14 @@ class SheduleState(StatesGroup):
     window_to_2_day = State()
 
 async def message_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
-    buttons = UserInline(width=1).question(message.from_user.id)
+    buttons = AdminInline(width=1).question(message.from_user.id)
     data_question = dict(user_id=message.from_user.id, name='Yurs', profile='HTTC', group='1-a')
     await message.bot.send_message(chat_id=TGbot.admin,
                                    text=USER['send_question'].format(**data_question), reply_markup=buttons)
     await message.bot.copy_message(chat_id=TGbot().admin, from_chat_id=str(message.from_user.id),
                                    message_id=message.message_id)
     await message.answer(text=USER['get_question'])
-    await dialog_manager.reset_stack()
+    await dialog_manager.done()
 
 question = Dialog(
     Window(
@@ -49,7 +48,7 @@ lst_window = [
     Window(
         Const(item['text']),
         Row(
-            *[SwitchTo(Const(data), id=data,
+            *[SwitchTo(Const(BUTTON[data]), id=data,
                        state=SheduleState.__dict__[f"window_{data}"]) for data in item['id']]
         ),
         state=SheduleState.__dict__[f"window_{item['day']}"]

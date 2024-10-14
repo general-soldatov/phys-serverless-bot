@@ -1,56 +1,40 @@
 import operator
 from aiogram import Dispatcher, Router
-from aiogram.types import Message, CallbackQuery, User, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.filters import Command, callback_data
+from aiogram.types import Message, CallbackQuery, User
+from aiogram.filters import Command
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from aiogram_dialog import DialogManager, Dialog, Window, StartMode
 from aiogram_dialog.widgets.kbd import Select
 from aiogram_dialog.widgets.text import Const, Format
 
-from app.config.config import TGbot
+from app.config.config import TGbot, USER
 from app.router import SLRouter
+from app.keyboard.inline import GraphTaskScoreCall, AdminInline
 
 class TaskState(StatesGroup):
     start = State()
     prepod = State()
 
-class GraphTaskScoreCall(callback_data.CallbackData, prefix='p_t'):
-    task: str
-    score: str
-    user_id: str
-    name: str
-
-
-async def task_handler(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, item_id: str):
-    _, task = item_id.split(sep='_')
-    keyboard = task_prepod(task=task, user_id=callback.from_user.id, name='Yur')
+async def task_handler(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, task_id: str):
     name = dialog_manager.dialog_data['name']
-    await callback.bot.send_message(chat_id=TGbot().admin, text=f'Task {task} {name}', reply_markup=keyboard)
-    await callback.message.edit_text('Task send to lecturer')
-    await dialog_manager.reset_stack()
+    keyboard = AdminInline(width=8).task_prepod(task=task_id, user_id=callback.from_user.id, name='Yur')
+    await callback.bot.send_message(chat_id=TGbot.admin,
+                                    text=USER['graph_task_prepod'].format(task=task_id, name=name),
+                                    reply_markup=keyboard)
+    await callback.message.edit_text(USER['graph_task_call'].format(task=task_id))
+    await dialog_manager.done()
 
 async def get_task(event_from_user: User, dialog_manager: DialogManager, **kwargs):
     # request to dynamodb need!
     tasks = ['S1', 'S2', 'S3', 'K1']
     dialog_manager.dialog_data['name'] = 'Yurick'
-    return {'tasks': [(i, f'{event_from_user.id}_{i}') for i in tasks]}
-
-def task_prepod(task: str, user_id: str, name: str, score: int=8):
-    builder = InlineKeyboardBuilder()
-    buttons: list = [InlineKeyboardButton(text=str(item),
-                                              callback_data=GraphTaskScoreCall(task=task,
-                                                                               score=str(item),
-                                                                               user_id=str(user_id), name=name).pack())
-                                                                               for item in range(score)]
-    builder.row(*buttons, width=8)
-    return builder.as_markup()
+    return {'tasks': [(i, i) for i in tasks]}
 
 
 task_dialog = Dialog(
     Window(
-        Const(text='Select you task'),
+        Const(text=USER['graph_task']),
         Select(
             Format('{item[0]}'),
             id='task_id',
@@ -76,9 +60,9 @@ async def graph_task_score_call(callback: CallbackQuery,
     #                    task=callback_data.task,
     #                    ball=callback_data.score)
     await callback.bot.send_message(chat_id=callback_data.user_id,
-                            text='{task} - {score}'.format(task=callback_data.task,
+                            text=USER['graph_task_score_user'].format(task=callback_data.task,
                                                                         score=callback_data.score))
     await callback.message.edit_text(
-        text='{name} - {task}: {score}'.format(name=callback_data.name,
+        text=USER['graph_task_score_prepod'].format(name=callback_data.name,
                         score=callback_data.score,
                         task=callback_data.task))
