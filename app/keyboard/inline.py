@@ -2,7 +2,7 @@ from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.config.config import BUTTON
+from app.config.config import StudyConfig, BUTTON
 
 
 class InlineKeyboard:
@@ -39,4 +39,21 @@ class AdminInline(InlineKeyboard):
                                                                                 user_id=str(user_id), name=name).pack())
                                                                                 for item in range(score)]
 
+        return self.builder_row(buttons=buttons, width=self.width)
+
+
+class UserInline(InlineKeyboard):
+    def contact(self) -> InlineKeyboardMarkup:
+        contacts: dict = StudyConfig.contact
+        buttons: list = [InlineKeyboardButton(text=BUTTON[key], url=value) for key, value in contacts.items()]
+        return self.builder_row(buttons=buttons, width=self.width)
+
+    def metodic(self) -> InlineKeyboardMarkup:
+        books: dict = StudyConfig.metodic
+        buttons: list = [InlineKeyboardButton(text=BUTTON[key], url=value) for key, value in books.items()]
+        return self.builder_row(buttons=buttons, width=self.width)
+
+    def textbook(self) -> InlineKeyboardMarkup:
+        books: dict = StudyConfig.books
+        buttons: list = [InlineKeyboardButton(text=BUTTON[key], url=value) for key, value in books.items()]
         return self.builder_row(buttons=buttons, width=self.width)

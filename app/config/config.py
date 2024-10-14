@@ -17,6 +17,9 @@ class TGbot:
 class StudyConfig:
     weekday = data['study']['weekday']
     select_day = list(data['study']['select_day'])
+    contact = data['contact']
+    metodic = data['metodic']
+    books = data['books']
 
 BUTTON = lexicon['buttons_ru']
 ADMIN = lexicon['admin']

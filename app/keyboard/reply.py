@@ -12,9 +12,9 @@ class ReplyButton:
         self.resize_keyboard = resize_keyboard
 
     def __call__(self, user_id):
-        self.user = 3 #UserUn().info_user(user_id)
+        self.user = [{'active': 1}] #UserUn().info_user(user_id)
         if self.user[0]['active'] == 3:
-            return self.auth_user()
+            return self.auth_user(user_id)
         if self.user[0]['active'] == 2:
             return self.auth_user(user_id)
         if self.user[0]['active'] == 1:
@@ -34,7 +34,7 @@ class ReplyButton:
 
 
     def auth_user(self, user_id) -> ReplyKeyboardMarkup:
-        box_button = ['profile', 'metodic', 'textbook', 'graph_task', 'shedule', 'contact']
+        box_button = ['profile', 'metodic', 'textbook', 'graph_task', 'shedule']
         btn = types.KeyboardButton(text=BUTTON[box_button[0]], web_app=WebAppInfo(url=f'https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/bot={user_id}'))
         buttons: list[KeyboardButton] = [btn]
         buttons.extend([KeyboardButton(text=BUTTON[item]) for item in box_button[1:]])
@@ -46,6 +46,6 @@ class ReplyButton:
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)
 
     def unauth_user(self) -> ReplyKeyboardMarkup:
-        box_button = ['metodic', 'textbook', 'contact']
+        box_button = ['metodic', 'textbook']
         buttons: list[KeyboardButton] = [KeyboardButton(text=BUTTON[item]) for item in box_button]
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)

@@ -5,3 +5,15 @@ title = "TOML Configure"
 [study]
 weekday = ['', "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА", "ВОСКРЕСЕНЬЕ"]
 select_day = ['today', 'tomorrow', 'after_tom', 'to_2_day']
+
+[contact]
+vk = 'https://vk.com/general_soldatov'
+telegram = 'https://t.me/general_soldatov'
+
+[metodic]
+mechanic_mkt = "https://drive.google.com/file/d/10ToIHwEVfMOCmsB3Rx0MrTMO3HguWWcF/view?usp=sharing"
+electrical = "https://drive.google.com/file/d/10IN4eIFwDeObEX-VOdgGNwriSuC1d9rj/view?usp=sharing"
+optics = "https://drive.google.com/file/d/10PhhtqlFOLd8hOn8vFnjAt5ejQDGqcMG/view?usp=sharing"
+
+[books]
+physics = "https://drive.google.com/file/d/1-vqc9NgTDGwn_ZLUX4hrDg4qnqAtoFsc/view?usp=sharing"
