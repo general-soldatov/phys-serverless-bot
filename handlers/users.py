@@ -1,13 +1,89 @@
+import operator
 from aiogram import F
 from aiogram.filters import CommandStart, Command, StateFilter
-from aiogram.types import Message
-from aiogram.fsm.state import default_state
+from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from aiogram_dialog import Window, Dialog, DialogManager
+from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.kbd import Row, Button, Column, Select, Back
 
 from app.router import SLRouter
 from app.config.config import COMMANDS, USER, BUTTON
 from app.keyboard.reply import ReplyButton
 from app.keyboard.inline import UserInline
+from app.api.user_api import UserApi
+
+class VideoSelector(StatesGroup):
+    category = State()
+    video = State()
+    view = State()
+
+async def category_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, item_id: str):
+    dialog_manager.dialog_data['video_category'] = item_id
+    await dialog_manager.next()
+
+async def video_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, item_id: str):
+    dialog_manager.dialog_data['video_id'] = int(item_id)
+    await dialog_manager.next()
+
+async def get_video_category(**kwargs):
+    video_categories = UserApi().video_request()
+    categories = [(i, i) for i in video_categories.keys()]
+    return {'categories': categories}
+
+async def get_video_list(dialog_manager: DialogManager, **kwargs):
+    category = dialog_manager.dialog_data['video_category']
+    video_request = UserApi().video_request(category)
+    video = [(item[0], i) for i, item in enumerate(video_request)]
+    return {'video': video}
+
+async def get_video_clip(dialog_manager: DialogManager, **kwargs):
+    category = dialog_manager.dialog_data['video_category']
+    video_id = dialog_manager.dialog_data['video_id']
+    video_request = UserApi().video_request(category)
+    return {
+        'url': video_request[video_id][1],
+        'name': video_request[video_id][0]
+        }
+
+video_dialog = Dialog(
+    Window(
+        Const('Select category'),
+        Column(
+            Select(
+                Format('{item[0]}'),
+                id='video_cat',
+                item_id_getter=operator.itemgetter(1),
+                items='categories',
+                on_click=category_selection
+            )
+        ),
+        state=VideoSelector.category,
+        getter=get_video_category
+    ),
+    Window(
+        Const('Select video'),
+        Column(
+            Select(
+                Format('{item[0]}'),
+                id='video_clip',
+                item_id_getter=operator.itemgetter(1),
+                items='video',
+                on_click=video_selection
+            ),
+            Back(Const('<< Back'))
+        ),
+        state=VideoSelector.video,
+        getter=get_video_list
+    ),
+    Window(
+        Format('{name}\n{url}'),
+        Back(Const('<< Back')),
+        state=VideoSelector.view,
+        getter=get_video_clip
+    ),
+)
 
 router = SLRouter()
 
@@ -55,3 +131,7 @@ async def button_book(message: Message):
     builder = UserInline().textbook()
     await message.answer(USER['textbook'], reply_markup=builder)
     await message.delete()
+
+@router.message(Command('video'))
+async def button_book(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(VideoSelector.category)

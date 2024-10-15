@@ -42,6 +42,7 @@ dialog_routers = [
     command.tech_dialog,
     command.news_dialog,
     command.lang_dialog,
+    users.video_dialog,
     register.register_dialog,
     question.question,
     question.shedule_dialog,

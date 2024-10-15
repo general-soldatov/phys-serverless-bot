@@ -11,17 +11,17 @@ load_dotenv()
 @dataclass
 class UserApi():
     shedule: str = getenv('API_SHEDULE')
-    books: str = getenv('API_BOOK')
+    video: str = getenv('API_VIDEO')
 
     def schedule(self, week: int, day: str):
         response = requests.get(self.shedule)
         data: dict = response.json()
         return data[str(week)][day.upper()]
 
-    def books_request(self, type_book: Optional[str] = None):
-        response = requests.get(self.books)
+    def video_request(self, category: Optional[str] = None) -> dict:
+        response = requests.get(self.video)
         data: dict = response.json()
-        return data[type_book] if type_book else data
+        return data[category] if category else data
 
     # def contingent(self, name: str) -> dict | bool:
     #     response = requests.get(bot_config.contingent)
