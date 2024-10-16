@@ -21,6 +21,11 @@ class StudyConfig:
     metodic = data['metodic']
     books = data['books']
 
+@dataclass
+class AdminConfig:
+    mailer = data['mailer']
+    profile = data['mailer']['profile']
+
 BUTTON = lexicon['buttons_ru']
 ADMIN = lexicon['admin']
 USER = lexicon['user']

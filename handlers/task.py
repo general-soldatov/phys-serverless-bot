@@ -11,6 +11,7 @@ from aiogram_dialog.widgets.text import Const, Format
 from app.config.config import TGbot, USER
 from app.router import SLRouter
 from app.keyboard.inline import GraphTaskScoreCall, AdminInline
+from app.filters.user import UserReply
 
 class TaskState(StatesGroup):
     start = State()
@@ -49,7 +50,7 @@ task_dialog = Dialog(
 
 router = SLRouter()
 
-@router.message(Command('task'))
+@router.message(UserReply('graph_task'))
 async def cmd_task(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(TaskState.start, mode=StartMode.RESET_STACK)
 

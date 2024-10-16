@@ -12,6 +12,7 @@ from app.config.config import TGbot, USER, BUTTON
 from app.api.user_api import Shedule
 from app.router import SLRouter
 from app.keyboard.inline import AdminInline
+from app.filters.user import UserReply
 
 class Question(StatesGroup):
     start = State()
@@ -22,7 +23,7 @@ class SheduleState(StatesGroup):
     window_after_tom = State()
     window_to_2_day = State()
 
-async def message_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
+async def question_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
     buttons = AdminInline(width=1).question(message.from_user.id)
     data_question = dict(user_id=message.from_user.id, name='Yurs', profile='HTTC', group='1-a')
     await message.bot.send_message(chat_id=TGbot.admin,
@@ -36,7 +37,7 @@ question = Dialog(
     Window(
         Const(text=USER['question']),
         MessageInput(
-            func=message_handler,
+            func=question_handler,
             content_types=ContentType.ANY
         ),
         state=Question.start,
@@ -59,10 +60,10 @@ shedule_dialog = Dialog(*lst_window)
 
 router = SLRouter()
 
-@router.message(Command('question'))
+@router.message(UserReply('question'))
 async def question_cmd(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=Question.start, mode=StartMode.RESET_STACK)
 
-@router.message(Command('shedule'))
+@router.message(UserReply('schedule'))
 async def shedule(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(SheduleState.window_today, mode=StartMode.RESET_STACK)

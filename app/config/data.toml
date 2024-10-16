@@ -17,3 +17,8 @@ optics = "https://drive.google.com/file/d/10PhhtqlFOLd8hOn8vFnjAt5ejQDGqcMG/view
 
 [books]
 physics = "https://drive.google.com/file/d/1-vqc9NgTDGwn_ZLUX4hrDg4qnqAtoFsc/view?usp=sharing"
+
+[mailer]
+profile = ['Все', 'НТТС', 'Агроинженерия']
+Агроинженерия = ['1-а', '1-б']
+НТТС = ['8-а', '8-б', '9-а']
