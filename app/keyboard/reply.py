@@ -46,6 +46,6 @@ class ReplyButton:
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)
 
     def unauth_user(self) -> ReplyKeyboardMarkup:
-        box_button = ['metodic', 'textbook']
+        box_button = ['metodic', 'textbook', 'video']
         buttons: list[KeyboardButton] = [KeyboardButton(text=BUTTON[item]) for item in box_button]
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)

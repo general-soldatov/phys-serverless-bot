@@ -26,8 +26,8 @@ config = DatabaseConfig().__dict__
 
 TOKEN = TGbot().token
 bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-# storage = FSMDynamodb(with_destiny=True, config=config)
-storage = MemoryStorage()
+storage = FSMDynamodb(with_destiny=True, config=config)
+# storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 # comand`s dialog router
 command_routers = [

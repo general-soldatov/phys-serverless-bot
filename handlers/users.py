@@ -4,15 +4,17 @@ from aiogram.filters import CommandStart, Command, StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.markdown import hide_link
 from aiogram_dialog import Window, Dialog, DialogManager
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.widgets.kbd import Row, Button, Column, Select, Back
+from aiogram_dialog.widgets.kbd import Column, Select, Back
 
 from app.router import SLRouter
 from app.config.config import COMMANDS, USER, BUTTON
 from app.keyboard.reply import ReplyButton
 from app.keyboard.inline import UserInline
 from app.api.user_api import UserApi
+from app.filters.user import UserReply
 
 class VideoSelector(StatesGroup):
     category = State()
@@ -29,7 +31,7 @@ async def video_selection(callback: CallbackQuery, widget: Select, dialog_manage
 
 async def get_video_category(**kwargs):
     video_categories = UserApi().video_request()
-    categories = [(i, i) for i in video_categories.keys()]
+    categories = [(BUTTON[i], i) for i in video_categories.keys()]
     return {'categories': categories}
 
 async def get_video_list(dialog_manager: DialogManager, **kwargs):
@@ -43,13 +45,15 @@ async def get_video_clip(dialog_manager: DialogManager, **kwargs):
     video_id = dialog_manager.dialog_data['video_id']
     video_request = UserApi().video_request(category)
     return {
+        'lab': USER['lab'],
+        'category' : BUTTON[category],
         'url': video_request[video_id][1],
         'name': video_request[video_id][0]
         }
 
 video_dialog = Dialog(
     Window(
-        Const('Select category'),
+        Const(USER['category']),
         Column(
             Select(
                 Format('{item[0]}'),
@@ -63,7 +67,7 @@ video_dialog = Dialog(
         getter=get_video_category
     ),
     Window(
-        Const('Select video'),
+        Const(USER['video_selector']),
         Column(
             Select(
                 Format('{item[0]}'),
@@ -72,14 +76,16 @@ video_dialog = Dialog(
                 items='video',
                 on_click=video_selection
             ),
-            Back(Const('<< Back'))
+            Back(Const(BUTTON['back']))
         ),
         state=VideoSelector.video,
         getter=get_video_list
     ),
     Window(
-        Format('{name}\n{url}'),
-        Back(Const('<< Back')),
+        Format('<b>{lab}</b> <i>{category}</i>'),
+        Format('"<i>{name}</i>"\n'),
+        Format(hide_link('{url}')),
+        Back(Const(BUTTON['back'])),
         state=VideoSelector.view,
         getter=get_video_clip
     ),
@@ -120,18 +126,19 @@ async def cmd_cancel_state(message: Message, state: FSMContext):
     await message.answer(text=COMMANDS['cancel'])
     await state.clear()
 
-@router.message(F.text == BUTTON['metodic'])
+@router.message(UserReply('metodic'))
 async def button_metodic(message: Message):
     builder = UserInline(width=2).metodic()
     await message.answer(USER['metodic'], reply_markup=builder)
     await message.delete()
 
-@router.message(F.text == BUTTON['textbook'])
+@router.message(UserReply('textbook'))
 async def button_book(message: Message):
     builder = UserInline().textbook()
     await message.answer(USER['textbook'], reply_markup=builder)
     await message.delete()
 
-@router.message(Command('video'))
+@router.message(UserReply('video'))
 async def button_book(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(VideoSelector.category)
+    await message.delete()
