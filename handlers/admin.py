@@ -21,7 +21,6 @@ class ScoreStat(StatesGroup):
     group = State()
     students = State()
     score = State()
-    available = State()
 
 async def handler_question(message: Message, widget: ManagedTextInput,
                        dialog_manager: DialogManager, text: str) -> None:
@@ -51,7 +50,8 @@ async def get_group(dialog_manager: DialogManager, **kwargs):
 async def get_students(dialog_manager: DialogManager, **kwargs):
     profile = dialog_manager.dialog_data['profile']
     group = dialog_manager.dialog_data['group']
-    students = [(item['name'], str(item['user_id'])) for item in DBStudents().score_user(profile, group)]
+    text = lambda item: f"{item['name']}_%{item['prize']}_Score{item['fine']}"
+    students = [(text(item), str(item['user_id'])) for item in DBStudents().score_user(profile, group)]
     return {'students': students}
 
 async def profile_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, profile_id: str):
@@ -66,9 +66,34 @@ async def group_selection(callback: CallbackQuery, widget: Select, dialog_manage
     dialog_manager.dialog_data['group'] = group_id
     await dialog_manager.next()
 
-async def student_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, students_id: str):
-    await callback.message.edit_text(students_id)
-    await dialog_manager.reset_stack()
+async def student_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, student_id: str):
+    dialog_manager.dialog_data['student_id'] = int(student_id)
+    await dialog_manager.next()
+
+def score_check(text: str) -> str:
+    condition = (
+        text[0] == '%' and 0 <= int(text[1:]) <= 100,
+        (text[0] == '-' or text[0] == '+') and int(text[1:]) < 50
+    )
+    if any(condition):
+        return text
+    raise ValueError
+
+async def score_correct_text(message: Message, widget: ManagedTextInput,
+                       dialog_manager: DialogManager, user_id: str) -> None:
+    if message.text[0] == '%':
+        student_id = dialog_manager.dialog_data['student_id']
+        DBStudents().set_prize(student_id, prize=int(message.text[1:]))
+    elif message.text[0] in ('+', '-'):
+        student_id = dialog_manager.dialog_data['student_id']
+        DBStudents().set_fine(student_id, fine=int(message.text))
+    await message.answer(ADMIN['success_score'])
+    await dialog_manager.switch_to(ScoreStat.students)
+
+
+async def error_text(message: Message, widget: ManagedTextInput,
+                     dialog_manager: DialogManager, error: ValueError):
+    await message.answer(USER['uncorrect'])
 
 question_dialog = Dialog(
     Window(
@@ -131,23 +156,18 @@ score_dialog = Dialog(
         state=ScoreStat.students,
         getter=get_students
     ),
-
+    Window(
+        Const(ADMIN['score_group_case']),
+        TextInput(
+            id='user_input',
+            type_factory=score_check,
+            on_success=score_correct_text,
+            on_error=error_text
+        ),
+        state=ScoreStat.score
+    )
 )
-    # Window(
-    #     Const(ADMIN['mailer']),
-    #     TextInput(
-    #         id='user_input',
-    #         # type_factory=user_check,
-    #         # on_success=correct_text,
-    #         # on_error=error_text
-    #     ),
-    #     Button(
-    #         Const(BUTTON['exit']),
-    #         id='exit',
-    #         # on_click=exit_user
-    #     ),
-    #     state=Mailer.text
-    # ),
+    #
     # Window(
     #     Format(USER['available']),
     #     Row(
