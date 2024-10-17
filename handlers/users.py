@@ -13,7 +13,7 @@ from app.router import SLRouter
 from app.config.config import COMMANDS, USER, BUTTON
 from app.keyboard.reply import ReplyButton
 from app.keyboard.inline import UserInline
-from app.api.user_api import UserApi
+from app.connect.api_user import UserApi
 from app.filters.user import UserReply
 
 class VideoSelector(StatesGroup):

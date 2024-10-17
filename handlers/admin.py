@@ -5,10 +5,11 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.text import Const, Format
 from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
-from aiogram_dialog.widgets.kbd import Row, Button, Select, Column
+from aiogram_dialog.widgets.kbd import Row, Button, Select, Column, Back
 
 from app.router import SLRouter
 from app.keyboard.inline import UserQuestion
+from app.connect.db_students import DBStudents
 from app.config.config import TGbot, AdminConfig, ADMIN, BUTTON, USER
 
 class Lecturer(StatesGroup):
@@ -19,6 +20,7 @@ class ScoreStat(StatesGroup):
     profile = State()
     group = State()
     students = State()
+    score = State()
     available = State()
 
 async def handler_question(message: Message, widget: ManagedTextInput,
@@ -46,14 +48,17 @@ async def get_group(dialog_manager: DialogManager, **kwargs):
     group = [(item, item) for item in AdminConfig.mailer[profile]]
     return {'group': group}
 
-async def get_students(**kwargs):
-    students = [key for key in BUTTON.items()]
+async def get_students(dialog_manager: DialogManager, **kwargs):
+    profile = dialog_manager.dialog_data['profile']
+    group = dialog_manager.dialog_data['group']
+    students = [(item['name'], str(item['user_id'])) for item in DBStudents().score_user(profile, group)]
     return {'students': students}
 
 async def profile_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, profile_id: str):
     # if profile_id == 'Все':
     #     await dialog_manager.switch_to(ScoreStat.text)
     # else:
+
     dialog_manager.dialog_data['profile'] = profile_id
     await dialog_manager.next()
 
@@ -106,6 +111,7 @@ score_dialog = Dialog(
                 items='group',
                 on_click=group_selection
             ),
+        Back(Const(BUTTON['back'])),
         state=ScoreStat.group,
         getter=get_group
     ),
@@ -113,14 +119,15 @@ score_dialog = Dialog(
         Const(ADMIN['stat_info']),
         Column(
             Select(
-                    Format('{item[1]}'),
+                    Format('{item[0]}'),
                     id='student',
-                    item_id_getter=operator.itemgetter(0),
+                    item_id_getter=operator.itemgetter(1),
                     items='students',
                     on_click=student_selection,
 
                 ),
         ),
+        Back(Const(BUTTON['back'])),
         state=ScoreStat.students,
         getter=get_students
     ),

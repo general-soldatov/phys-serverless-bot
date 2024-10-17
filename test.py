@@ -1,7 +1,8 @@
 from dynamodb_fsm import FSMDynamodb
 import asyncio
 # from handlers.question import Shedule
-from app.api.user_api import Shedule
+from app.connect.api_user import Shedule
+from app.connect.db_students import DBStudents, DatabaseConfig
 from datetime import datetime
 import requests
 import json
@@ -55,4 +56,9 @@ def req_video(category: Optional[str] = None):
     data: dict = response.json()
     return data[category] if category else data
 
-video_json()
+def database():
+    db = DBStudents()
+    # db = DatabaseConfig().__dict__
+    print(db.score_user(profile='НТТС', group='9-а'))
+
+database()

@@ -9,7 +9,7 @@ from aiogram_dialog.widgets.kbd import Row, SwitchTo
 from aiogram_dialog.widgets.text import Const
 
 from app.config.config import TGbot, USER, BUTTON
-from app.api.user_api import Shedule
+from app.connect.api_user import Shedule
 from app.router import SLRouter
 from app.keyboard.inline import AdminInline
 from app.filters.user import UserReply
