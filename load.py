@@ -48,7 +48,8 @@ dialog_routers = [
     question.shedule_dialog,
     task.task_dialog,
     admin.question_dialog,
-    admin.score_dialog
+    admin.score_dialog,
+    admin.mailer_dialog
 ]
 dp.include_routers(*command_routers)
 dp.include_routers(*dialog_routers)

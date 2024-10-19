@@ -16,7 +16,7 @@ class Register(StatesGroup):
     available = State()
 
 def user_check(text: str) -> str:
-    if text == 'user':
+    if len(text) > 5 :
         return text
     raise ValueError
 

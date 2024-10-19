@@ -154,19 +154,6 @@ class DBStudents:
         table = self.dynamodb.Table(self.table_name)
         return table.scan()['Items']
 
-    # def for_mailer(self, profile, group):
-    #     """Метод выгрузки ключей таблицы для рассылки
-    #     """
-    #     table = self.dynamodb.Table(self.table_name)
-    #     scan_kwargs = {
-    #         'ProjectionExpression': "user_id, profile, group"
-    #     }
-    #     response = table.scan(**scan_kwargs)
-    #     try:
-    #         return [int(item['user_id']) for item in response['Items'] if item['profile'] == profile and item['group'] == group]
-    #     except Exception as e:
-    #         logger.error(f'{e}')
-
     def score_user(self, profile: str, group: str):
         filter_expression = "profile = :p AND group = :g"
         expression_attribute_values = {
@@ -193,6 +180,8 @@ class DBStudents:
             logger.error(e)
 
     def mailer_user(self, profile, group=None):
+        """Метод выгрузки ключей таблицы для рассылки
+        """
         if not group:
             filter_expression = "profile = :p"
             expression_attribute_values = {":p": {"S": f"{profile}"}}

@@ -1,16 +1,20 @@
 import operator
+import logging
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.exceptions import TelegramAPIError
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.text import Const, Format
-from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
+from aiogram_dialog.widgets.input import TextInput, ManagedTextInput, MessageInput
 from aiogram_dialog.widgets.kbd import Row, Button, Select, Column, Back
 
 from app.router import SLRouter
 from app.keyboard.inline import UserQuestion
 from app.connect.db_students import DBStudents
 from app.config.config import TGbot, AdminConfig, ADMIN, BUTTON, USER
+
+logger = logging.getLogger(__name__)
 
 class Lecturer(StatesGroup):
     start = State()
@@ -22,8 +26,14 @@ class ScoreStat(StatesGroup):
     students = State()
     score = State()
 
-async def handler_question(message: Message, widget: ManagedTextInput,
-                       dialog_manager: DialogManager, text: str) -> None:
+class Mailer(StatesGroup):
+    profile = State()
+    group = State()
+    text = State()
+    available = State()
+
+async def get_message_id(message: Message, widget: MessageInput,
+                       dialog_manager: DialogManager) -> None:
     dialog_manager.dialog_data['message_id'] = message.message_id
     await dialog_manager.next()
 
@@ -34,15 +44,45 @@ async def question_yes(callback: CallbackQuery, widget: Button, dialog_manager: 
     await callback.message.edit_text(ADMIN['question_succesful'].format(user_id=user_id))
     await dialog_manager.done()
 
-async def question_no(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    await dialog_manager.back()
+async def mailer_yes(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    profile = dialog_manager.dialog_data['profile']
+    group = dialog_manager.dialog_data['group']
+    if profile == BUTTON['all']:
+        pass
+    else:
+        user_list = DBStudents().mailer_user(profile, group)
+        errors = await mailer_go(callback, user_list, dialog_manager.dialog_data['message_id'])
+    await callback.message.edit_text(text=ADMIN['mailer_done'].format(errors=errors))
+    await dialog_manager.done()
+
+
+async def mailer_go(callback: CallbackQuery, user: list, message_id: str | int):
+    errors = {}
+    if user:
+        for item in user:
+            try:
+                await callback.bot.copy_message(from_chat_id=callback.from_user.id,
+                                    chat_id=item,
+                                    message_id=message_id)
+            except TelegramAPIError as e:
+                    if 'Bad Request: chat not found' in e.__str__():
+                        # UserUn().update_active(user_id=item, active=0)
+                        errors[item] = e
+                        logger.error(e)
+
+            except Exception as e:
+                logger.error(e)
+                errors[item] = e
+    else:
+        errors['all'] = 'not users'
+    return errors
+
 
 async def get_profile(**kwargs):
     profile = [(item, item) for item in AdminConfig.profile[1:]]
     return {'profile': profile}
 
 async def get_group(dialog_manager: DialogManager, **kwargs):
-    # profile = [item for item in AdminConfig.profile]
     profile = dialog_manager.dialog_data['profile']
     group = [(item, item) for item in AdminConfig.mailer[profile]]
     return {'group': group}
@@ -54,21 +94,24 @@ async def get_students(dialog_manager: DialogManager, **kwargs):
     students = [(text(item), str(item['user_id'])) for item in DBStudents().score_user(profile, group)]
     return {'students': students}
 
-async def profile_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, profile_id: str):
-    # if profile_id == 'Все':
-    #     await dialog_manager.switch_to(ScoreStat.text)
-    # else:
+async def get_mail(dialog_manager: DialogManager, **kwargs):
+    data = dict(**dialog_manager.dialog_data)
+    if not dialog_manager.dialog_data['group']:
+        data['group'] = 'All'
+    return data
 
-    dialog_manager.dialog_data['profile'] = profile_id
-    await dialog_manager.next()
+class SelectorStud:
+    def __init__(self, stat: StatesGroup, types_data: str):
+        self.stat = stat
+        self.types_data = types_data
 
-async def group_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, group_id: str):
-    dialog_manager.dialog_data['group'] = group_id
-    await dialog_manager.next()
+    async def __call__(self, callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, data: str):
+        if isinstance(self.stat, Mailer) and self.types_data == 'profile' and data == 'Все':
+            await dialog_manager.switch_to(Mailer.text)
+        else:
+            dialog_manager.dialog_data[self.types_data] = data
+            await dialog_manager.next()
 
-async def student_selection(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, student_id: str):
-    dialog_manager.dialog_data['student_id'] = int(student_id)
-    await dialog_manager.next()
 
 def score_check(text: str) -> str:
     condition = (
@@ -83,10 +126,10 @@ async def score_correct_text(message: Message, widget: ManagedTextInput,
                        dialog_manager: DialogManager, user_id: str) -> None:
     if message.text[0] == '%':
         student_id = dialog_manager.dialog_data['student_id']
-        DBStudents().set_prize(student_id, prize=int(message.text[1:]))
+        DBStudents().set_prize(int(student_id), prize=int(message.text[1:]))
     elif message.text[0] in ('+', '-'):
         student_id = dialog_manager.dialog_data['student_id']
-        DBStudents().set_fine(student_id, fine=int(message.text))
+        DBStudents().set_fine(int(student_id), fine=int(message.text))
     await message.answer(ADMIN['success_score'])
     await dialog_manager.switch_to(ScoreStat.students)
 
@@ -98,17 +141,14 @@ async def error_text(message: Message, widget: ManagedTextInput,
 question_dialog = Dialog(
     Window(
         Const(ADMIN['reply_question']),
-        TextInput(
-            id='admin_input',
-            on_success=handler_question
-        ),
+        MessageInput(get_message_id),
         state=Lecturer.start
     ),
     Window(
         Const(ADMIN['available_reply']),
         Row(
             Button(text=Const(BUTTON['yes']), id='yes', on_click=question_yes),
-            Button(text=Const(BUTTON['no']), id='no', on_click=question_no)
+            Back(text=Const(BUTTON['no']))
         ),
         state=Lecturer.available
     )
@@ -122,7 +162,7 @@ score_dialog = Dialog(
                 id='profile',
                 item_id_getter=operator.itemgetter(0),
                 items='profile',
-                on_click=profile_selection
+                on_click=SelectorStud(ScoreStat, 'profile')
             ),
         state=ScoreStat.profile,
         getter=get_profile
@@ -134,7 +174,7 @@ score_dialog = Dialog(
                 id='group',
                 item_id_getter=operator.itemgetter(0),
                 items='group',
-                on_click=group_selection
+                on_click=SelectorStud(ScoreStat, 'group')
             ),
         Back(Const(BUTTON['back'])),
         state=ScoreStat.group,
@@ -148,7 +188,7 @@ score_dialog = Dialog(
                     id='student',
                     item_id_getter=operator.itemgetter(1),
                     items='students',
-                    on_click=student_selection,
+                    on_click=SelectorStud(ScoreStat, 'student_id'),
 
                 ),
         ),
@@ -167,16 +207,51 @@ score_dialog = Dialog(
         state=ScoreStat.score
     )
 )
-    #
-    # Window(
-    #     Format(USER['available']),
-    #     Row(
-    #         # Button(text=Const(BUTTON['yes']), id='yes', on_click=success_register),
-    #         # Button(text=Const(BUTTON['no']), id='no', on_click=unsuccess_register)
-    #     ),
-    #     # getter=get_user,
-    #     state=Mailer.available
-    # )
+
+mailer_dialog = Dialog(
+    Window(
+        Const(ADMIN['mailer']),
+        Select(
+                Format('{item[1]}'),
+                id='profile',
+                item_id_getter=operator.itemgetter(0),
+                items='profile',
+                on_click=SelectorStud(Mailer, 'profile')
+            ),
+        state=Mailer.profile,
+        getter=get_profile
+    ),
+    Window(
+        Const(ADMIN['mail_group']),
+        Select(
+                Format('{item[1]}'),
+                id='group',
+                item_id_getter=operator.itemgetter(0),
+                items='group',
+                on_click=SelectorStud(Mailer, 'group')
+            ),
+        Back(Const(BUTTON['back'])),
+        state=Mailer.group,
+        getter=get_group
+    ),
+    Window(
+        Const(ADMIN['message_mailer']),
+        MessageInput(get_message_id),
+        Back(Const(BUTTON['back'])),
+        state=Mailer.text
+    ),
+    Window(
+            Format(ADMIN['available']),
+            Row(
+                Button(text=Const(BUTTON['yes']), id='yes', on_click=mailer_yes),
+                Back(text=Const(BUTTON['no']))
+            ),
+            getter=get_mail,
+            state=Mailer.available
+        )
+)
+
+
 
 
 router = SLRouter()
@@ -190,3 +265,7 @@ async def send_question(callback: CallbackQuery, callback_data: UserQuestion, di
 @router.message(Command('score'))
 async def score_query(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=ScoreStat.profile)
+
+@router.message(Command('mail'))
+async def score_query(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.start(state=Mailer.profile)
