@@ -15,6 +15,7 @@ from app.keyboard.reply import ReplyButton
 from app.keyboard.inline import UserInline
 from app.connect.api_user import UserApi
 from app.filters.user import UserReply
+from app.connect.db_user import DBUser
 
 class VideoSelector(StatesGroup):
     category = State()
@@ -95,11 +96,10 @@ router = SLRouter()
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    # register = UserUn()
-    # register.put_item(user_id=message.from_user.id, name=message.from_user.first_name)
-    # buttons = UserButton().unauth_user()
-    await message.reply(text=COMMANDS['start'].format(name=message.from_user.first_name),)
-                        # reply_markup=buttons)
+    DBUser().put_item(user_id=message.from_user.id, name=message.from_user.first_name)
+    buttons = ReplyButton().unauth_user()
+    await message.reply(text=COMMANDS['start'].format(name=message.from_user.first_name),
+                        reply_markup=buttons)
 
 @router.message(Command('help'))
 async def cmd_help(message: Message):

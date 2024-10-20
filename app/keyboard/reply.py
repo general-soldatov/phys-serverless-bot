@@ -3,7 +3,8 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.types.web_app_info import WebAppInfo
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-from app.config.config import BUTTON
+from app.config.config import TGbot, BUTTON
+from app.connect.db_user import DBUser
 
 
 class ReplyButton:
@@ -11,8 +12,10 @@ class ReplyButton:
         self.width = width
         self.resize_keyboard = resize_keyboard
 
-    def __call__(self, user_id):
-        self.user = [{'active': 2}] #UserUn().info_user(user_id)
+    def __call__(self, user_id: int):
+        # if user_id == TGbot.admin:
+        #     return self.auth_user(user_id)
+        self.user = DBUser().info_user(user_id)
         if self.user[0]['active'] == 3:
             return self.auth_user(user_id)
         if self.user[0]['active'] == 2:

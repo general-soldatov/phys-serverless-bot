@@ -12,6 +12,7 @@ load_dotenv()
 class UserApi():
     shedule: str = getenv('API_SHEDULE')
     video: str = getenv('API_VIDEO')
+    students: str = getenv('API_CONTINGENT')
 
     def schedule(self, week: int, day: str):
         response = requests.get(self.shedule)
@@ -23,18 +24,11 @@ class UserApi():
         data: dict = response.json()
         return data[category] if category else data
 
-    # def contingent(self, name: str) -> dict | bool:
-    #     response = requests.get(bot_config.contingent)
-    #     data: dict = response.json()
-    #     search_name = name.title()
-    #     return data.get(search_name, False)
-
-    # def get_task(self, category='mechanic', level=10, num=0):
-    #     token = bot_config.task_api_token
-    #     api_url = bot_config.task_api_url
-    #     url = f'{api_url}/task_book/token={token}category={category}_level={level}num={num}'
-    #     response = requests.get(url)
-    #     return response.json()
+    def contingent(self, name: str) -> dict | bool:
+        response = requests.get(self.students)
+        data: dict = response.json()
+        search_name = name.title()
+        return data.get(search_name, False)
 
 class Shedule:
     def __init__(self, connect=UserApi()) -> None:

@@ -9,6 +9,10 @@ from aiogram_dialog.widgets.kbd import Row, Button
 
 from .command import router
 from app.config.config import TGbot, USER, BUTTON, COMMANDS
+from app.connect.api_user import UserApi
+from app.connect.db_students import DBStudents
+from app.connect.db_user import DBUser
+from app.keyboard.reply import ReplyButton
 
 
 class Register(StatesGroup):
@@ -22,12 +26,10 @@ def user_check(text: str) -> str:
 
 async def correct_text(message: Message, widget: ManagedTextInput,
                        dialog_manager: DialogManager, text: str) -> None:
-    if message.text == 'user':
-        dialog_manager.dialog_data['name_user'] = {
-            'name': 'user',
-            'profile': 'HTTC',
-            'group': '1-a'
-            }
+    user = UserApi().contingent(name=message.text)
+    if user:
+        dialog_manager.dialog_data['data_user'] = {'name': message.text.title()}
+        dialog_manager.dialog_data['data_user'].update(**user)
         await dialog_manager.next()
 
 
@@ -36,16 +38,21 @@ async def error_text(message: Message, widget: ManagedTextInput,
     await message.answer(USER['uncorrect'])
 
 async def success_register(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    DBStudents().register_student(user_id=callback.message.from_user.id, **dialog_manager.dialog_data['data_user'])
+    DBUser().update_active(user_id=callback.message.from_user.id, active=2)
+    button = ReplyButton().auth_user(callback.message.from_user.id)
     await callback.message.bot.send_message(chat_id=TGbot.admin,
-                                            text=USER['register_admin'].format(**dialog_manager.dialog_data['name_user']))
-    await callback.message.edit_text(USER['yes'].format(**dialog_manager.dialog_data['name_user']))
+                                            text=USER['register_admin'].format(**dialog_manager.dialog_data['data_user']))
+    await callback.message.delete()
+    await callback.message.answer(USER['yes'].format(**dialog_manager.dialog_data['data_user']),
+                                     reply_markup=button)
     await dialog_manager.done()
 
 async def unsuccess_register(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     await dialog_manager.back()
 
 async def get_user(dialog_manager: DialogManager, **kwargs):
-    return dialog_manager.dialog_data['name_user']
+    return dialog_manager.dialog_data['data_user']
 
 async def exit_user(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     await callback.message.edit_text(USER['exit_reg'])

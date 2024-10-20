@@ -57,9 +57,8 @@ class DBStudents:
         )
         return table
 
-    def put_item(self, user_id, name, profile, group, var, var_d1, fine=0, prize=0):
+    def register_student(self, user_id, name, profile, group, fine=0, prize=0, google_id=0):
         table = self.dynamodb.Table(self.table_name)
-        all_var = {'var_all': var, 'var_d1': var_d1}
         tasks = {'S0': 0}
         bonus = {
             'static': 0,
@@ -72,7 +71,6 @@ class DBStudents:
                     'name': name,
                     'profile': profile,
                     'group': group,
-                    'var': all_var,
                     'fine': fine,
                     'prize': prize,
                     'tasks': tasks,

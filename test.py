@@ -1,7 +1,7 @@
 from dynamodb_fsm import FSMDynamodb
 import asyncio
 # from handlers.question import Shedule
-from app.connect.api_user import Shedule
+from app.connect.api_user import Shedule, UserApi
 from app.connect.db_students import DBStudents, DatabaseConfig
 from datetime import datetime
 import requests
@@ -61,4 +61,4 @@ def database():
     # db = DatabaseConfig().__dict__
     print(db.score_user(profile='НТТС', group='9-а'))
 
-database()
+print(UserApi().contingent('Ряполов Кирилл Константинович'))
