@@ -35,14 +35,6 @@ class DatabaseConfig:
     aws_access_key_id: str = getenv('AWS_ACCESS_KEY_ID')
     aws_secret_access_key: str = getenv('AWS_SECRET_ACCESS_KEY')
 
-# dynamodb_config = boto3.resource(
-#                 'dynamodb',
-#                 endpoint_url=DatabaseConfig.endpoint,
-#                 region_name=DatabaseConfig.region_name,
-#                 aws_access_key_id=DatabaseConfig.key_id,
-#                 aws_secret_access_key=DatabaseConfig.access_key
-#                 )
-
 
 BUTTON = lexicon['buttons_ru']
 ADMIN = lexicon['admin']

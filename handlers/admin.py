@@ -13,6 +13,8 @@ from app.router import SLRouter
 from app.keyboard.inline import UserQuestion
 from app.connect.db_students import DBStudents
 from app.config.config import TGbot, AdminConfig, ADMIN, BUTTON, USER
+from app.filters.admin import AdminReply
+from app.keyboard.reply import ReplyButton
 
 logger = logging.getLogger(__name__)
 
@@ -262,10 +264,20 @@ async def send_question(callback: CallbackQuery, callback_data: UserQuestion, di
     dialog_manager.dialog_data['user_id'] = callback_data.user_id
     await callback.answer()
 
-@router.message(Command('score'))
+@router.message(Command('admin'))
+async def cmd_admin(message: Message):
+    button = ReplyButton().admin_user()
+    await message.answer(ADMIN['admin'], reply_markup=button)
+
+@router.message(AdminReply('stat_info'))
 async def score_query(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=ScoreStat.profile)
 
-@router.message(Command('mail'))
-async def score_query(message: Message, dialog_manager: DialogManager):
+@router.message(AdminReply('mailer'))
+async def mailer_query(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=Mailer.profile)
+
+@router.message(AdminReply('exit_admin'))
+async def exit_button(message: Message):
+    button = ReplyButton().auth_user(message.from_user.id)
+    await message.answer(ADMIN['exit_admin'], reply_markup=button)
