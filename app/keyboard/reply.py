@@ -44,7 +44,7 @@ class ReplyButton:
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)
 
     def admin_user(self) -> ReplyKeyboardMarkup:
-        comands = ['mailer', 'stat_info', 'exit_admin']
+        comands = ['mailer', 'stat_info', 'update_rate', 'exit_admin']
         buttons: list[KeyboardButton] = [KeyboardButton(text=BUTTON[item]) for item in comands]
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)
 

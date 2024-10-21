@@ -266,7 +266,7 @@ async def send_question(callback: CallbackQuery, callback_data: UserQuestion, di
 
 @router.message(Command('admin'))
 async def cmd_admin(message: Message):
-    button = ReplyButton().admin_user()
+    button = ReplyButton(width=2).admin_user()
     await message.answer(ADMIN['admin'], reply_markup=button)
 
 @router.message(AdminReply('stat_info'))
@@ -277,7 +277,12 @@ async def score_query(message: Message, dialog_manager: DialogManager):
 async def mailer_query(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(state=Mailer.profile)
 
+@router.message(AdminReply('update_rate'))
+async def mailer_query(message: Message):
+    await message.answer(ADMIN['update_rate'])
+
 @router.message(AdminReply('exit_admin'))
-async def exit_button(message: Message):
+async def exit_button(message: Message, dialog_manager: DialogManager):
     button = ReplyButton().auth_user(message.from_user.id)
     await message.answer(ADMIN['exit_admin'], reply_markup=button)
+    await dialog_manager.reset_stack()
