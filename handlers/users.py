@@ -96,7 +96,8 @@ router = SLRouter()
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    DBUser().put_item(user_id=message.from_user.id, name=message.from_user.first_name)
+    name_user = f'{message.from_user.first_name} {message.from_user.last_name}'
+    DBUser().put_item(user_id=message.from_user.id, name=name_user)
     buttons = ReplyButton().unauth_user()
     await message.reply(text=COMMANDS['start'].format(name=message.from_user.first_name),
                         reply_markup=buttons)

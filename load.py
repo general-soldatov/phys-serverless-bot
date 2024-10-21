@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from os import getenv
 
 from app.config.config import TGbot
+from app.middleware.user import FirstOuterMiddleware
 from handlers import command, register, question, task, admin, users
 
 
@@ -29,23 +30,17 @@ bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 # storage = FSMDynamodb(with_destiny=True, config=config)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
+dp.update.outer_middleware(FirstOuterMiddleware())
 # comand`s dialog router
+dp.include_routers(users.router, users.video_dialog, register.register_dialog)
 command_routers = [
-    users.router,
     task.router,
     question.router,
-    command.router,
     admin.router
 ]
 dialog_routers = [
-    command.start_dialog,
-    command.tech_dialog,
-    command.news_dialog,
-    command.lang_dialog,
-    users.video_dialog,
-    register.register_dialog,
-    question.question,
     question.shedule_dialog,
+    question.question,
     task.task_dialog,
     admin.question_dialog,
     admin.score_dialog,

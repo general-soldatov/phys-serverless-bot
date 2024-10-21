@@ -1,3 +1,5 @@
+import asyncio
+import logging
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -7,12 +9,14 @@ from aiogram_dialog.widgets.input import TextInput, ManagedTextInput
 from aiogram_dialog.widgets.text import Const, Format
 from aiogram_dialog.widgets.kbd import Row, Button
 
-from .command import router
+from .users import router
 from app.config.config import TGbot, USER, BUTTON, COMMANDS
 from app.connect.api_user import UserApi
 from app.connect.db_students import DBStudents
 from app.connect.db_user import DBUser
 from app.keyboard.reply import ReplyButton
+
+logger = logging.getLogger(__name__)
 
 
 class Register(StatesGroup):
@@ -38,9 +42,9 @@ async def error_text(message: Message, widget: ManagedTextInput,
     await message.answer(USER['uncorrect'])
 
 async def success_register(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    DBStudents().register_student(user_id=callback.message.from_user.id, **dialog_manager.dialog_data['data_user'])
-    DBUser().update_active(user_id=callback.message.from_user.id, active=2)
-    button = ReplyButton().auth_user(callback.message.from_user.id)
+    DBUser().update_active(user_id=callback.from_user.id, active=3)
+    DBStudents().register_student(user_id=callback.from_user.id, **dialog_manager.dialog_data['data_user'])
+    button = ReplyButton().auth_user(callback.from_user.id)
     await callback.message.bot.send_message(chat_id=TGbot.admin,
                                             text=USER['register_admin'].format(**dialog_manager.dialog_data['data_user']))
     await callback.message.delete()

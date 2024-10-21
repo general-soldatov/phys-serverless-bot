@@ -12,9 +12,11 @@ from aiogram_dialog.widgets.kbd import Row, Button, Select, Column, Back
 from app.router import SLRouter
 from app.keyboard.inline import UserQuestion
 from app.connect.db_students import DBStudents
+from app.connect.db_user import DBUser
 from app.config.config import TGbot, AdminConfig, ADMIN, BUTTON, USER
 from app.filters.admin import AdminReply
 from app.keyboard.reply import ReplyButton
+from app.middleware.admin import AdminMessageMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ async def mailer_yes(callback: CallbackQuery, widget: Button, dialog_manager: Di
         user_list = DBStudents().mailer_user(profile, group)
         errors = await mailer_go(callback, user_list, dialog_manager.dialog_data['message_id'])
     await callback.message.edit_text(text=ADMIN['mailer_done'].format(errors=errors))
-    await dialog_manager.done()
+    await dialog_manager.reset_stack()
 
 
 async def mailer_go(callback: CallbackQuery, user: list, message_id: str | int):
@@ -68,7 +70,7 @@ async def mailer_go(callback: CallbackQuery, user: list, message_id: str | int):
                                     message_id=message_id)
             except TelegramAPIError as e:
                     if 'Bad Request: chat not found' in e.__str__():
-                        # UserUn().update_active(user_id=item, active=0)
+                        DBUser().update_active(user_id=item, active=0)
                         errors[item] = e
                         logger.error(e)
 
@@ -253,10 +255,8 @@ mailer_dialog = Dialog(
         )
 )
 
-
-
-
 router = SLRouter()
+router.message.middleware(AdminMessageMiddleware())
 
 @router.callback_query(UserQuestion.filter())
 async def send_question(callback: CallbackQuery, callback_data: UserQuestion, dialog_manager: DialogManager):

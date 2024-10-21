@@ -153,7 +153,6 @@ lang_dialog = Dialog(
 )
 
 router = SLRouter()
-# async def router(dp: Dispatcher):
 
 @router.message(CommandStart())
 async def start(message: Message, dialog_manager: DialogManager):

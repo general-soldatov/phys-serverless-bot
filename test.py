@@ -3,9 +3,11 @@ import asyncio
 # from handlers.question import Shedule
 from app.connect.api_user import Shedule, UserApi
 from app.connect.db_students import DBStudents, DatabaseConfig
+from app.connect.db_user import DBUser
 from datetime import datetime
 import requests
 import json
+from app.config.config import TGbot
 
 async def all():
     result = FSMDynamodb().all_value()
@@ -61,4 +63,5 @@ def database():
     # db = DatabaseConfig().__dict__
     print(db.score_user(profile='НТТС', group='9-а'))
 
-print(UserApi().contingent('Ряполов Кирилл Константинович'))
+# DBUser().update_active(user_id=int(TGbot.admin), active=2)
+print(DBUser().info_user(int(TGbot.admin)))

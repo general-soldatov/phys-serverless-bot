@@ -90,7 +90,7 @@ class DBUser:
             ProjectionExpression = 'user_id, name, active',
             KeyConditionExpression = Key('user_id').eq(user_id)
         )
-        return response['Items']
+        return response['Items'][0]
 
     def all_users(self):
         """Метод сканирования всех элементов таблицы.

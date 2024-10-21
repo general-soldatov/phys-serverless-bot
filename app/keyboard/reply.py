@@ -37,8 +37,8 @@ class ReplyButton:
 
 
     def auth_user(self, user_id) -> ReplyKeyboardMarkup:
-        box_button = ['profile', 'metodic', 'textbook', 'graph_task', 'schedule', 'video']
-        btn = types.KeyboardButton(text=BUTTON[box_button[0]], web_app=WebAppInfo(url=f'https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/bot={user_id}'))
+        box_button = ['profile', 'metodic', 'textbook', 'graph_task', 'schedule', 'video', 'question']
+        btn = types.KeyboardButton(text=BUTTON[box_button[0]], web_app=WebAppInfo(url=f'https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/phys/bot={user_id}'))
         buttons: list[KeyboardButton] = [btn]
         buttons.extend([KeyboardButton(text=BUTTON[item]) for item in box_button[1:]])
         return self._builder(buttons, width=self.width, resize_keyboard=self.resize_keyboard)

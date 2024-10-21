@@ -13,6 +13,7 @@ from app.router import SLRouter
 from app.keyboard.inline import GraphTaskScoreCall, AdminInline
 from app.filters.user import UserReply
 from app.connect.db_students import DBStudents
+from app.middleware.user import StudentsMessageMiddleware
 
 class TaskState(StatesGroup):
     start = State()
@@ -55,6 +56,8 @@ task_dialog = Dialog(
 )
 
 router = SLRouter()
+router.message.outer_middleware(StudentsMessageMiddleware())
+router.callback_query.outer_middleware(StudentsMessageMiddleware())
 
 @router.message(UserReply('graph_task'))
 async def button_task(message: Message, dialog_manager: DialogManager):

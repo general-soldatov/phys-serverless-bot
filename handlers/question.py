@@ -13,6 +13,7 @@ from app.connect.api_user import Shedule
 from app.router import SLRouter
 from app.keyboard.inline import AdminInline
 from app.filters.user import UserReply
+from app.middleware.user import StudentsMessageMiddleware
 
 class Question(StatesGroup):
     start = State()
@@ -59,6 +60,8 @@ for item in Shedule().data()]
 shedule_dialog = Dialog(*lst_window)
 
 router = SLRouter()
+router.message.outer_middleware(StudentsMessageMiddleware())
+router.callback_query.outer_middleware(StudentsMessageMiddleware())
 
 @router.message(UserReply('question'))
 async def question_cmd(message: Message, dialog_manager: DialogManager):
