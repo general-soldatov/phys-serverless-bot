@@ -1,4 +1,5 @@
 from dynamodb_fsm import FSMDynamodb
+import time
 import asyncio
 # from handlers.question import Shedule
 from app.connect.api_user import Shedule, UserApi
@@ -64,6 +65,15 @@ def database():
     # db = DatabaseConfig().__dict__
     print(db.score_user(profile='НТТС', group='9-а'))
 
+def create_tables():
+    """Функция для создания таблиц в БД
+    """
+    DBStudents().create_table()
+    time.sleep(1)
+    DBUser().create_table()
+
 # DBUser().update_active(user_id=int(TGbot.admin), active=2)
 # print(DBUser().info_user(int(TGbot.admin)))
-print(DBStudents().get_user(int(TGbot.admin)))
+# print(DBStudents().get_user(int(TGbot.admin)))
+
+create_tables()

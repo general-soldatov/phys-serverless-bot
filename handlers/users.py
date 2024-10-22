@@ -181,21 +181,9 @@ async def cmd_cancel_state(message: Message, state: FSMContext):
 @router.message(UserReply('book'))
 async def button_book(message: Message, dialog_manager: DialogManager):
     await dialog_manager.start(BookSelector.category)
-
-@router.message(UserReply('metodic'))
-async def button_metodic(message: Message):
-    builder = UserInline(width=2).metodic()
-    await message.answer(USER['metodic'], reply_markup=builder)
-    await message.delete()
-
-@router.message(UserReply('textbook'))
-async def button_book(message: Message):
-    builder = UserInline().textbook()
-    await message.answer(USER['textbook'], reply_markup=builder)
     await message.delete()
 
 @router.message(UserReply('video'))
 async def button_book(message: Message, dialog_manager: DialogManager):
-    await dialog_manager.reset_stack()
     await dialog_manager.start(VideoSelector.category, mode=StartMode.RESET_STACK)
     await message.delete()
