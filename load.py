@@ -5,7 +5,6 @@ from aiogram.enums import ParseMode
 from aiogram_dialog import setup_dialogs
 from dataclasses import dataclass
 from dynamodb_fsm import FSMDynamodb
-# from dynamodb_fsm.database import Dynamodb
 from dotenv import load_dotenv
 from os import getenv
 
@@ -32,16 +31,22 @@ storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 dp.update.outer_middleware(FirstOuterMiddleware())
 # comand`s dialog router
-dp.include_routers(users.router, users.video_dialog, register.register_dialog)
+first_router = [
+    users.router, register.register_dialog,
+
+]
+dp.include_routers(*first_router)
 command_routers = [
     task.router,
     question.router,
     admin.router
 ]
 dialog_routers = [
-    question.shedule_dialog,
-    question.question,
+    users.book_dialog,
+    users.video_dialog,
     task.task_dialog,
+    question.question,
+    question.shedule_dialog,
     admin.question_dialog,
     admin.score_dialog,
     admin.mailer_dialog

@@ -57,10 +57,11 @@ task_dialog = Dialog(
 
 router = SLRouter()
 router.message.outer_middleware(StudentsMessageMiddleware())
-router.callback_query.outer_middleware(StudentsMessageMiddleware())
+# router.callback_query.outer_middleware(StudentsMessageMiddleware())
 
 @router.message(UserReply('graph_task'))
 async def button_task(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.reset_stack()
     await dialog_manager.start(TaskState.start, mode=StartMode.RESET_STACK)
 
 @router.callback_query(GraphTaskScoreCall.filter())

@@ -25,7 +25,7 @@ class StudentsMessageMiddleware(BaseMiddleware):
         except Exception as e:
             errors = f'Errors from {user.id} "{user.first_name} {user.last_name}": {e}'
             result = await event.bot.send_message(chat_id=int(TGbot.admin),
-                                                  text=ADMIN['errors_middleware'].format(errors))
+                                                  text=ADMIN['errors_middleware'].format(errors=errors))
         return result
 
 class FirstOuterMiddleware(BaseMiddleware):
@@ -49,6 +49,6 @@ class FirstOuterMiddleware(BaseMiddleware):
         except Exception as e:
             errors = f'Errors from {user.id} "{user.first_name} {user.last_name}": {e}'
             result = await event.bot.send_message(chat_id=int(TGbot.admin),
-                                                  text=ADMIN['errors_middleware'].format(errors))
+                                                  text=ADMIN['errors_middleware'].format(errors=errors))
 
         return result

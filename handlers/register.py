@@ -42,7 +42,7 @@ async def error_text(message: Message, widget: ManagedTextInput,
     await message.answer(USER['uncorrect'])
 
 async def success_register(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    DBUser().update_active(user_id=callback.from_user.id, active=3)
+    DBUser().update_active(user_id=callback.from_user.id, active=2)
     DBStudents().register_student(user_id=callback.from_user.id, **dialog_manager.dialog_data['data_user'])
     button = ReplyButton().auth_user(callback.from_user.id)
     await callback.message.bot.send_message(chat_id=TGbot.admin,

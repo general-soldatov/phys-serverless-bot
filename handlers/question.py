@@ -14,6 +14,7 @@ from app.router import SLRouter
 from app.keyboard.inline import AdminInline
 from app.filters.user import UserReply
 from app.middleware.user import StudentsMessageMiddleware
+from app.connect.db_students import DBStudents
 
 class Question(StatesGroup):
     start = State()
@@ -26,9 +27,9 @@ class SheduleState(StatesGroup):
 
 async def question_handler(message: Message, widget: MessageInput, dialog_manager: DialogManager):
     buttons = AdminInline(width=1).question(message.from_user.id)
-    data_question = dict(user_id=message.from_user.id, name='Yurs', profile='HTTC', group='1-a')
+    data = DBStudents().get_user(message.from_user.id)
     await message.bot.send_message(chat_id=TGbot.admin,
-                                   text=USER['send_question'].format(**data_question), reply_markup=buttons)
+                                   text=USER['send_question'].format(**data), reply_markup=buttons)
     await message.bot.copy_message(chat_id=TGbot().admin, from_chat_id=str(message.from_user.id),
                                    message_id=message.message_id)
     await message.answer(text=USER['get_question'])
@@ -61,12 +62,14 @@ shedule_dialog = Dialog(*lst_window)
 
 router = SLRouter()
 router.message.outer_middleware(StudentsMessageMiddleware())
-router.callback_query.outer_middleware(StudentsMessageMiddleware())
+# router.callback_query.outer_middleware(StudentsMessageMiddleware())
 
 @router.message(UserReply('question'))
 async def question_cmd(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.reset_stack()
     await dialog_manager.start(state=Question.start, mode=StartMode.RESET_STACK)
 
 @router.message(UserReply('schedule'))
 async def shedule(message: Message, dialog_manager: DialogManager):
+    await dialog_manager.reset_stack()
     await dialog_manager.start(SheduleState.window_today, mode=StartMode.RESET_STACK)

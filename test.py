@@ -8,6 +8,7 @@ from datetime import datetime
 import requests
 import json
 from app.config.config import TGbot
+from handlers.users import BookSelector
 
 async def all():
     result = FSMDynamodb().all_value()
@@ -64,4 +65,5 @@ def database():
     print(db.score_user(profile='НТТС', group='9-а'))
 
 # DBUser().update_active(user_id=int(TGbot.admin), active=2)
-print(DBUser().info_user(int(TGbot.admin)))
+# print(DBUser().info_user(int(TGbot.admin)))
+print(DBStudents().get_user(int(TGbot.admin)))

@@ -13,14 +13,12 @@ class ReplyButton:
         self.resize_keyboard = resize_keyboard
 
     def __call__(self, user_id: int):
-        # if user_id == TGbot.admin:
-        #     return self.auth_user(user_id)
         self.user = DBUser().info_user(user_id)
-        if self.user[0]['active'] == 3:
+        if self.user['active'] == 3:
             return self.auth_user(user_id)
-        if self.user[0]['active'] == 2:
+        if self.user['active'] == 2:
             return self.auth_user(user_id)
-        if self.user[0]['active'] == 1:
+        if self.user['active'] == 1:
             return self.unauth_user()
         return False
 
@@ -37,7 +35,7 @@ class ReplyButton:
 
 
     def auth_user(self, user_id) -> ReplyKeyboardMarkup:
-        box_button = ['profile', 'metodic', 'textbook', 'graph_task', 'schedule', 'video', 'question']
+        box_button = ['profile', 'book', 'graph_task', 'schedule', 'video', 'question']
         btn = types.KeyboardButton(text=BUTTON[box_button[0]], web_app=WebAppInfo(url=f'https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/phys/bot={user_id}'))
         buttons: list[KeyboardButton] = [btn]
         buttons.extend([KeyboardButton(text=BUTTON[item]) for item in box_button[1:]])

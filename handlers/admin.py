@@ -44,6 +44,7 @@ async def get_message_id(message: Message, widget: MessageInput,
 async def question_yes(callback: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     user_id = dialog_manager.dialog_data['user_id']
     message_id = dialog_manager.dialog_data['message_id']
+    await callback.bot.send_message(chat_id=user_id, text=ADMIN['send_question'])
     await callback.bot.copy_message(chat_id=user_id, from_chat_id=TGbot.admin, message_id=message_id)
     await callback.message.edit_text(ADMIN['question_succesful'].format(user_id=user_id))
     await dialog_manager.done()
