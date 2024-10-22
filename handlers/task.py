@@ -20,10 +20,11 @@ class TaskState(StatesGroup):
     prepod = State()
 
 async def task_handler(callback: CallbackQuery, widget: Select, dialog_manager: DialogManager, task_id: str):
-    name = dialog_manager.dialog_data['name']
-    keyboard = AdminInline(width=8).task_prepod(task=task_id, user_id=callback.from_user.id, name='Yur')
+    name = dialog_manager.dialog_data['name'].split(sep=' ')
+    data_name = f'{name[0]} {'.'.join([item[:1] for item in name[1:]])}.'
+    keyboard = AdminInline(width=8).task_prepod(task=task_id, user_id=callback.from_user.id, name=data_name)
     await callback.bot.send_message(chat_id=TGbot.admin,
-                                    text=USER['graph_task_prepod'].format(task=task_id, name=name),
+                                    text=USER['graph_task_prepod'].format(task=task_id, name=dialog_manager.dialog_data['name']),
                                     reply_markup=keyboard)
     await callback.message.edit_text(USER['graph_task_call'].format(task=task_id))
     await dialog_manager.done()
