@@ -1,5 +1,6 @@
 import operator
 import logging
+import requests
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -280,7 +281,12 @@ async def mailer_query(message: Message, dialog_manager: DialogManager):
 
 @router.message(AdminReply('update_rate'))
 async def mailer_query(message: Message):
-    await message.answer(ADMIN['update_rate'])
+    response = requests.get('https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/rate=termex-bot').json()
+    response_phys = requests.get('https://d5dvtf5ioi8q69ckjelk.apigw.yandexcloud.net/telegram_bot/rate=phys-bot').json()
+    time_data = float(response['time']) + float(response_phys['time'])
+    await message.answer(ADMIN['update_rate'].format(termex=response['message'],
+                                                     phys=response_phys['message'],
+                                                     time_data=round(time_data, 3)))
 
 @router.message(AdminReply('exit_admin'))
 async def exit_button(message: Message, dialog_manager: DialogManager):

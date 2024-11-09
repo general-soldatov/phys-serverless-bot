@@ -76,4 +76,12 @@ def create_tables():
 # print(DBUser().info_user(int(TGbot.admin)))
 # print(DBStudents().get_user(int(TGbot.admin)))
 
-create_tables()
+# create_tables()
+
+def success_register(user_id = 1130164675, name = 'Плацында Алина Вячеслововна'):
+    response = requests.get('https://storage.yandexcloud.net/phys-bot/json/contingent.json')
+    data = response.json()[name]
+    DBUser().update_active(user_id, active=2)
+    DBStudents().register_student(user_id=user_id, name=name, **data)
+
+print(DBStudents().get_user(1130164675))
