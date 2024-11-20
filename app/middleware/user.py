@@ -23,7 +23,7 @@ class StudentsMessageMiddleware(BaseMiddleware):
                 result = await event.bot.send_message(chat_id=user.id, text=USER['permission_denied'])
 
         except Exception as e:
-            errors = f'Errors from {user.id} "{user.first_name} {user.last_name}": {e}'
+            errors = f'Errors from {user.id} "{user.full_name} {user.username}": {e}'
             result = await event.bot.send_message(chat_id=int(TGbot.admin),
                                                   text=ADMIN['errors_middleware'].format(errors=errors))
         return result
@@ -42,12 +42,12 @@ class FirstOuterMiddleware(BaseMiddleware):
                 result = await event.bot.send_message(chat_id=user.id, text=USER['permission_denied'])
 
         except IndexError:
-            name_user = f'{user.first_name} {user.last_name}'
+            name_user = f'{user.full_name} {user.username}'
             DBUser().put_item(user.id, name_user)
             logger.error('Index Error')
             result = await handler(event, data)
         except Exception as e:
-            errors = f'Errors from {user.id} "{user.first_name} {user.last_name}": {e}'
+            errors = f'Errors from {user.id} "{user.full_name} {user.username}": {e}'
             result = await event.bot.send_message(chat_id=int(TGbot.admin),
                                                   text=ADMIN['errors_middleware'].format(errors=errors))
 
